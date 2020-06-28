@@ -7,11 +7,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/spf13/cast"
 	"github.com/yourbasic/graph"
 )
-
-//Wg ... global wait group var for synchronization
-var Wg sync.WaitGroup
 
 type (
 	//Event ... event
@@ -100,7 +98,7 @@ func (c *Command) Deregister(o Observer) {
 
 //Execute ... execute a command after verifying all dependencies
 func (c *Command) Execute() {
-	Wg.Add(1)
+	wg.Add(1)
 	c.execute()
 }
 
@@ -114,7 +112,7 @@ func (c *Command) execute() {
 
 	c.Notify(Event{key: c.key, evt: "start"})
 	go func() {
-		defer Wg.Done()
+		defer wg.Done()
 		execCmd := exec.Command("/bin/sh", "-c", c.cmd)
 		c.ret = execCmd.Run()
 		c.done = true
@@ -124,7 +122,7 @@ func (c *Command) execute() {
 }
 
 //RegisterNotifications ... register notifications from all dependencies
-func (c *Command) RegisterNotifications(commands map[string]*Command, g *graph.Mutable) error {
+func (c *Command) RegisterNotifications(g *graph.Mutable) error {
 
 	for d := range c.trackdep {
 		if notifier, ok := commands[d]; ok {
@@ -145,6 +143,61 @@ func (c *Command) RegisterNotifications(commands map[string]*Command, g *graph.M
 //OnNotify ... update ui on event notification
 func (u *UI) OnNotify(e Event) {
 	if e.evt == "end" {
-		fmt.Println(e.key+" completed, ret: ", e.ret)
+		completedCount += 1
+		fmt.Println( "command " + e.key+" completed, ret: ", e.ret, ",  " + cast.ToString(completedCount) + "/" + cast.ToString(len(commands)))
 	}
+}
+
+
+
+var wg sync.WaitGroup
+var commands map[string]*Command 
+var completedCount int
+
+func init() {
+	commands = make(map[string]*Command)
+}
+
+
+
+func Start(input map[string]interface{}) {
+
+	u := new(UI)
+
+
+	//Initialize commands
+	i := 0
+	for k, v := range input {
+		c := new(Command)
+		c.Init(k, v, i)
+		c.Register(u)
+		commands[k] = c
+		i++
+	}
+
+	g := graph.New(len(commands))
+
+	//Register command dependencies and check for missing and cyclic dependency
+	for _, c := range commands {
+		err := c.RegisterNotifications(g)
+		if err != nil {
+			return
+		}
+	}
+
+	if !graph.Acyclic(g) {
+		cycle := graph.StrongComponents(g)
+		fmt.Println(cycle)
+		fmt.Println("cyclic dependency detected in input, please fix it")
+		return
+	}
+
+	//Execute commands concurrently
+	for _, c := range commands {
+		c.Execute()
+	}
+
+	//Wait until all goroutines finish their job
+	wg.Wait()
+
 }
