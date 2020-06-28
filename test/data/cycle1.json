@@ -1,0 +1,34 @@
+{
+    "0": {
+        "dep": "5",
+        "run": "echo command 0: sleeping 2s && sleep 2 && echo woke up from 2s sleep > /dev/null"
+    },
+    "1": {
+        "run": "echo command 1: sleeping 4s && sleep 4 && echo woke up from 4s sleep > /dev/null"
+    },
+    "2": {
+        "dep": "0",
+        "run": "echo command 2: after command 0"
+    },
+    "3": {
+        "dep": "1",
+        "run": "echo command 3: after command 1"
+    },
+    "4": {
+        "dep": "2",
+        "run": "echo command 4: after command 2"
+    },
+    "5": {
+        "dep": "7",
+        "run": "echo command 5: with no dependency"
+    },
+    "6": {
+        "dep": "0,1",
+        "run": "echo command 6: after command 0,1"
+    },
+    "7": {
+        "dep": "0,1",
+        "run": "echo command 6: after command 0,1"
+    }
+
+}

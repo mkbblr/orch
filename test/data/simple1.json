@@ -1,0 +1,18 @@
+{
+    "0": {
+        "dep": "1",
+        "run": "echo command 0 && sleep 2 > /dev/null"
+    },
+    "1": {
+        "run": "echo command 1 && sleep 4 > /dev/null"
+    },
+    "2": {
+        "dep": "0",
+        "run": "echo command 2: after command 0"
+    },
+    "3": {
+        "dep": "1",
+        "run": "echo command 3: after command 1"
+    }
+
+}
