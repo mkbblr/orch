@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mkbblr/orch/command"
+	"github.com/mkbblr/orch/internal/orch"
 
 	"github.com/yourbasic/graph"
 )
@@ -48,14 +48,14 @@ func main() {
 		return
 	}
 
-	u := new(command.UI)
+	u := new(orch.UI)
 
-	commands := make(map[string]*command.Command)
+	commands := make(map[string]*orch.Command)
 
 	i := 0
 	//Initialize commmands
 	for k, v := range input {
-		c := new(command.Command)
+		c := new(orch.Command)
 		c.Init(k, v, i)
 		c.Register(u)
 		commands[k] = c
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	//Wait until all goroutines finish their job
-	command.Wg.Wait()
+	orch.Wg.Wait()
 
 	fmt.Println("Done !!!")
 }
