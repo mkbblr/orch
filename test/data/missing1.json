@@ -18,9 +18,6 @@
         "run": "echo .",
         "dep": {"make": "pass"}
     },
-    "pre-configure": {
-        "run": "sleep 1 > /dev/null"
-    },
     "send": {
         "run": "echo .",
         "dep": {"make": "fail", "doc": "pass"}
